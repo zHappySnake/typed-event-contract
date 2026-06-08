@@ -4,9 +4,16 @@ import { EventEmitter } from 'events';
 
 /** Simple MessagePort‑like mock using Node's EventEmitter */
 class MockPort extends EventEmitter {
+  /** The port on the opposite side of the communication channel */
+  other?: MockPort;
+
+  /** Simulate MessagePort.postMessage – forward to the other port. */
   postMessage(data: any) {
-    // Emitting "message" mimics the behavior of a real MessagePort.
-    this.emit('message', data);
+    if (this.other) {
+      // Emit a "message" event on the counterpart, mimicking a worker sending a
+      // message to its peer.
+      this.other.emit('message', data);
+    }
   }
 }
 
@@ -15,14 +22,14 @@ type Events = {
   num: { n: number };
 };
 
-describe('WorkerTransport', () => {
+describe('WorkerTransport', () =>
+  {
   it('sends and receives messages between two ports', () => {
     const portA = new MockPort();
     const portB = new MockPort();
-
-    // Wire the ports together – each message emitted on one is forwarded to the other.
-    portA.on('message', (msg) => portB.emit('message', msg));
-    portB.on('message', (msg) => portA.emit('message', msg));
+    // Connect the ports.
+    portA.other = portB;
+    portB.other = portA;
 
     const transportA = new WorkerTransport<Events>(portA as any);
     const transportB = new WorkerTransport<Events>(portB as any);
