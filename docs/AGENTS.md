@@ -193,6 +193,7 @@ Changes should be introduced incrementally:
 
 Commit history should accurately reflect the evolution of the codebase:
 
+
 * Preserve meaningful intermediate steps
 * Do not squash unrelated work together
 * Keep refactors separate from behavioral changes
