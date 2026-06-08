@@ -1,5 +1,4 @@
-import { expect, test } from 'vitest';
-import { expectType } from 'expect-type';
+import { expect, expectTypeOf, test } from 'vitest';
 import { createEventBus } from '../../src/core/eventBus';
 
 type Events = {
@@ -13,9 +12,9 @@ const bus = createEventBus<Events>();
 bus.emit('user:created', { id: '1', email: 'a@example.com' });
 bus.emit('user:deleted', { id: '2' });
 
-// Listener payload type inference – `expectType` validates at compile time.
+// Listener payload type inference – `expectTypeOf` validates at compile time.
 bus.on('user:created', (payload) => {
-  expectType<{ id: string; email: string }>(payload);
+    expectTypeOf<{ id: string; email: string }>(payload);
 });
 
 // Dummy test to satisfy Vitest runner – the type assertions above are checked at compile time.
