@@ -1,0 +1,35 @@
+stages:
+  - test
+
+test:
+  stage: test
+
+  image: node:22
+
+  parallel:
+    matrix:
+      - NODE_VERSION: "22"
+
+  variables:
+    PNPM_HOME: "$CI_PROJECT_DIR/.pnpm"
+    PATH: "$PNPM_HOME:$PATH"
+
+  cache:
+    key: pnpm-cache
+    paths:
+      - .pnpm-store
+      - node_modules
+
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+  before_script:
+    - corepack enable
+    - corepack prepare pnpm@latest --activate
+    - pnpm config set store-dir .pnpm-store
+
+  script:
+    - pnpm install --frozen-lockfile
+    - pnpm run lint
+    - pnpm test
