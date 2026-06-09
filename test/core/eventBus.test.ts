@@ -31,8 +31,8 @@ describe('EventBus runtime behaviour', () => {
     const bus = createEventBus<Events>();
     const listener = vi.fn();
     bus.on('test:event', listener);
-    // Emit a different event – using `as any` to bypass the type system for test.
-    (bus as any).emit('test:msg', 'ignored');
+    // Type assertion only on the string literal
+    bus.emit("test:msg" as keyof Events, 'ignored');
     expect(listener).not.toHaveBeenCalled();
   });
 });
