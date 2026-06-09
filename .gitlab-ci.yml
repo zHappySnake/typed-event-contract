@@ -4,7 +4,9 @@ stages:
 test:
   stage: test
 
-  image: node:22
+  image:
+    name: node:22
+    entrypoint: [""]
 
   parallel:
     matrix:
