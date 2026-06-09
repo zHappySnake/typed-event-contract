@@ -35,7 +35,7 @@ pnpm run lint
 
 ## Project Structure
 
-The codebase is intentionally seperated into clear layers:
+The codebase is intentionally separated into clear layers:
 ```
 src/
 ├── core/         Event bus logic and type definitions. No I/O.
@@ -80,13 +80,13 @@ Preferred prefixes:
 
 ### Commit quality rules
 - Keep commits small and focused
-- Seperate tests, implementation, and docs when possible
+- Separate tests, implementation, and docs when possible
 - Avoid mixed-purpose commits (e.g. refactor + feature + docs)
 - Ensure code builds and tests pass
 
 A clear history matters more than minimizing commit count.
 
-### Pull Requests
+### Merge Requests
 When opening a merge request:
 - Clearly describe the motivation behind the change
 - Link related issues if applicable

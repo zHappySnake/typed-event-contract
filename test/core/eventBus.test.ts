@@ -31,8 +31,34 @@ describe('EventBus runtime behaviour', () => {
     const bus = createEventBus<Events>();
     const listener = vi.fn();
     bus.on('test:event', listener);
-    // Type assertion only on the string literal
     bus.emit("test:msg" as keyof Events, 'ignored');
     expect(listener).not.toHaveBeenCalled();
+  });
+
+  it('off() removes a listener so it no longer receives events', () => {
+    const bus = createEventBus<Events>();
+    const listener = vi.fn();
+    bus.on('test:msg', listener);
+    bus.off('test:msg', listener);
+    bus.emit('test:msg', 'hello');
+    expect(listener).not.toHaveBeenCalled();
+  });
+
+  it('off() only removes the specified listener, leaving others intact', () => {
+    const bus = createEventBus<Events>();
+    const l1 = vi.fn();
+    const l2 = vi.fn();
+    bus.on('test:msg', l1);
+    bus.on('test:msg', l2);
+    bus.off('test:msg', l1);
+    bus.emit('test:msg', 'hello');
+    expect(l1).not.toHaveBeenCalled();
+    expect(l2).toHaveBeenCalledWith('hello');
+  });
+
+  it('off() is a no-op when the listener was never registered', () => {
+    const bus = createEventBus<Events>();
+    const listener = vi.fn();
+    expect(() => bus.off('test:msg', listener)).not.toThrow();
   });
 });

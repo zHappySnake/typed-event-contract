@@ -40,7 +40,14 @@ export interface DebuggableEventBus<T extends Record<string, unknown>> extends E
   /** Retrieve the recorded trace. */
   getTrace(): TraceEntry<T>[];
 
-  /** Replay all recorded events in order. */
+  /**
+   * Replay all recorded events in order.
+   *
+   * Note: replay runs events through the full middleware chain. If your
+   * middleware has side effects (logging, deduplication, etc.) those will
+   * fire again for each replayed event. Register middleware that is
+   * idempotent, or clear middleware before replaying if needed.
+   */
   replay(): void;
 
   /** Register a devtools handler that receives every emitted event. */
@@ -85,6 +92,7 @@ export function createDebuggableEventBus<T extends Record<string, unknown>>():
       dispatch(event, payload);
     },
     on: baseBus.on.bind(baseBus),
+    off: baseBus.off.bind(baseBus),
     use(mw) {
       middlewares.push(mw);
     },
@@ -99,7 +107,8 @@ export function createDebuggableEventBus<T extends Record<string, unknown>>():
       return [...trace];
     },
     replay() {
-      // Replay a snapshot of the current trace to avoid infinite loops if middleware records events again.
+      // Replay a snapshot of the current trace to avoid infinite loops if
+      // middleware records events again.
       const snapshot = [...trace];
       for (const record of snapshot) {
         dispatch(record.event, record.payload);

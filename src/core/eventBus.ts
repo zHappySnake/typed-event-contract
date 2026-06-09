@@ -2,13 +2,13 @@
 /**
  * Typed event bus implementation for the typed-event-contract library.
  *
- * Provides a strongly typed `emit` / `on` API where the event names and payloads
- * are inferred from a user‑provided event map type.
+ * Provides a strongly typed `emit` / `on` / `off` API where the event names and payloads
+ * are inferred from a user-provided event map type.
  *
- * The implementation is intentionally minimal – a simple in‑memory map of
+ * The implementation is intentionally minimal - a simple in-memory map of
  * listeners. It satisfies the core MVP requirements:
  *   * Full type inference of event names and payloads
- *   * Local (in‑process) event bus
+ *   * Local (in-process) event bus
  *   * No external runtime dependencies
  */
 
@@ -19,6 +19,9 @@ export interface EventBus<T extends Record<string, unknown>> {
 
   /** Register a listener for a specific event. */
   on<E extends keyof T>(event: E, listener: (payload: T[E]) => void): void;
+
+  /** Remove a previously registered listener for a specific event. */
+  off<E extends keyof T>(event: E, listener: (payload: T[E]) => void): void;
 }
 
 /**
@@ -28,7 +31,7 @@ export interface EventBus<T extends Record<string, unknown>> {
  * private `Map`. No hidden state leaks outside the closure.
  */
 export function createEventBus<T extends Record<string, unknown>>(): EventBus<T> {
-  // Map of event name → set of listener callbacks.
+  // Map of event name -> set of listener callbacks.
   const listeners = new Map<string, Set<(payload: unknown) => void>>();
 
   return {
@@ -49,9 +52,15 @@ export function createEventBus<T extends Record<string, unknown>>(): EventBus<T>
         set = new Set();
         listeners.set(key, set);
       }
-      // The cast is safe – the listener expects the concrete payload type for
+      // The cast is safe - the listener expects the concrete payload type for
       // the specific event; we store it as a generic function.
       set.add(listener as (payload: unknown) => void);
+    },
+    off(event, listener) {
+      const set = listeners.get(event as string);
+      if (set) {
+        set.delete(listener as (payload: unknown) => void);
+      }
     },
   };
 }

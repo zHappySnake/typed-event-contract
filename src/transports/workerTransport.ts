@@ -2,7 +2,7 @@ import { Transport } from "./transport";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * WorkerTransport implements the Transport interface using a MessagePort‑like
+ * WorkerTransport implements the Transport interface using a MessagePort-like
  * object (e.g. a Web Worker, `worker_threads` parentPort, or any object that
  * provides `postMessage` and an event listener for `'message'`).
  *
@@ -10,11 +10,9 @@ import { Transport } from "./transport";
  * `payload`. Incoming messages are parsed and dispatched to registered listeners.
  */
 export class WorkerTransport<T extends Record<string, any>> implements Transport<T> {
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-/** Underlying communication channel – a MessagePort‑like object */
+  /** Underlying communication channel - a MessagePort-like object */
   private readonly port: any;
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-/** Local listeners mapped by event name */
+  /** Local listeners mapped by event name */
   private readonly listeners: Map<string, Set<(payload: any) => void>> = new Map();
 
   constructor(port: any) {
@@ -30,7 +28,6 @@ export class WorkerTransport<T extends Record<string, any>> implements Transport
       } else if (typeof this.port.addListener === "function") {
         this.port.addListener("message", handler);
       } else {
-        // Fallback: assume the port has an `on` method.
         this.port.on?.("message", handler);
       }
     };
@@ -52,13 +49,13 @@ export class WorkerTransport<T extends Record<string, any>> implements Transport
           }
         }
       } catch {
-        // Invalid JSON – ignore silently as per other transports.
+        // Invalid JSON - ignore silently as per other transports.
       }
     });
   }
-   
-/**
-   * Send an event over the worker channel. The data is JSON‑stringified with the
+
+  /**
+   * Send an event over the worker channel. The data is JSON-stringified with the
    * shape `{ event, payload }`.
    */
   send<E extends keyof T>(event: E, payload: T[E]): void {
@@ -66,8 +63,7 @@ export class WorkerTransport<T extends Record<string, any>> implements Transport
     this.port.postMessage(msg);
   }
 
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-/** Register a listener for a specific event name. */
+  /** Register a listener for a specific event name. */
   on<E extends keyof T>(event: E, listener: (payload: T[E]) => void): void {
     const key = event as string;
     let set = this.listeners.get(key);
@@ -75,8 +71,14 @@ export class WorkerTransport<T extends Record<string, any>> implements Transport
       set = new Set();
       this.listeners.set(key, set);
     }
-    // Store the listener as a generic function; type safety is enforced by the
-    // public API.
     set.add(listener as (payload: any) => void);
+  }
+
+  /** Remove a previously registered listener for a specific event name. */
+  off<E extends keyof T>(event: E, listener: (payload: T[E]) => void): void {
+    const set = this.listeners.get(event as string);
+    if (set) {
+      set.delete(listener as (payload: any) => void);
+    }
   }
 }
