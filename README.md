@@ -26,7 +26,7 @@ yarn add typed-event-contract
 
 ## Documentation
 
-API reference, usage examples, framework integration guides (Next.js, Vite, Bun), and a migration guide from Node's `EventEmitter` are in the [project Wiki](https://gitlab.com/nwks-public/typed-event-contract/-/wikis/home) (WIP).
+API reference, usage examples, framework integration guides (Next.js, Vite, Bun), and a migration guide from Node's `EventEmitter` are in the [project Wiki](https://gitlab.com/nwks-public/typed-event-contract/-/wikis/home).
 
 ---
 
