@@ -1,4 +1,4 @@
-import { expectTypeOf, test } from 'vitest';
+import { expect, expectTypeOf, test } from 'vitest';
 import { HttpTransport } from '../../src/transports/httpTransport';
 
 // Dummy instance – no network activity needed for compile‑time checks.
