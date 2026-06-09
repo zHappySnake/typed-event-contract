@@ -6,6 +6,11 @@ import { Buffer } from "buffer";
 /**
  * WebSocketTransport implements the Transport interface using a WebSocket
  * connection for event delivery. Payloads are serialized as JSON strings.
+ *
+ * Note: this transport depends on the `ws` package and is intended for
+ * Node.js environments. In browser environments the native `WebSocket` global
+ * is available and `ws` is not needed; a browser-specific build or conditional
+ * import should be used instead.
  */
 export class WebSocketTransport<T extends Record<string, any>> implements Transport<T> {
   private ws: WebSocket;
@@ -24,7 +29,7 @@ export class WebSocketTransport<T extends Record<string, any>> implements Transp
       } else if (Array.isArray(data)) {
         text = Buffer.concat(data as Buffer[]).toString();
       } else {
-        // ArrayBuffer or other binary – convert to string
+        // ArrayBuffer or other binary - convert to string
         text = Buffer.from(data as ArrayBuffer).toString();
       }
       try {
@@ -36,13 +41,12 @@ export class WebSocketTransport<T extends Record<string, any>> implements Transp
           }
         }
       } catch {
-        // Invalid JSON – ignore for now.
+        // Invalid JSON - ignore for now.
       }
     });
   }
 
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-/**
+  /**
    * Create a client connection to a WebSocket server.
    * Resolves when the underlying socket is open.
    */
@@ -71,5 +75,12 @@ export class WebSocketTransport<T extends Record<string, any>> implements Transp
       this.listeners.set(key, set);
     }
     set.add(listener as (payload: any) => void);
+  }
+
+  off<E extends keyof T>(event: E, listener: (payload: T[E]) => void): void {
+    const set = this.listeners.get(event as string);
+    if (set) {
+      set.delete(listener as (payload: any) => void);
+    }
   }
 }

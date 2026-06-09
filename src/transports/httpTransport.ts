@@ -11,14 +11,16 @@ import { IncomingMessage, ServerResponse } from "http";
  * - `listenPath` is the URL path that the server accepts POST requests on.
  *   Defaults to `/event`.
  * - `targetUrl` is the endpoint to which `send` POSTs events.
- *   If omitted, `send` becomes a no‑op.
+ *   If omitted, `send` becomes a no-op.
+ *
+ * **Node.js only** - this transport is not compatible with browser or edge runtimes.
  */
 export interface HttpTransportOptions {
-/** Port for the inbound HTTP server. Omit to disable listening. */
+  /** Port for the inbound HTTP server. Omit to disable listening. */
   listenPort?: number;
-/** Request path for inbound events – defaults to `/event`. */
+  /** Request path for inbound events - defaults to `/event`. */
   listenPath?: string;
-/** Full URL of the remote endpoint for outgoing events. */
+  /** Full URL of the remote endpoint for outgoing events. */
   targetUrl?: string;
 }
 
@@ -28,21 +30,22 @@ export interface HttpTransportOptions {
  *
  * It can act as a server (receiving events via HTTP POST) and/or a client
  * (sending events to a remote HTTP endpoint). The implementation purposefully
- * avoids external dependencies – it relies only on Node's built‑in `http`/`https`
+ * avoids external dependencies - it relies only on Node's built-in `http`/`https`
  * modules.
+ *
+ * **Node.js only** - this transport is not compatible with browser or edge runtimes.
  */
 export class HttpTransport<T extends Record<string, any>> implements Transport<T> {
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-/** Map of event listeners keyed by event name. */
+  /** Map of event listeners keyed by event name. */
   private listeners: Map<string, Set<(payload: any) => void>> = new Map();
-   
-/** Optional HTTP server for inbound events. */
+
+  /** Optional HTTP server for inbound events. */
   public server?: http.Server;
-   
-/** The request path the server expects – defaults to `/event`. */
+
+  /** The request path the server expects - defaults to `/event`. */
   private readonly listenPath: string;
-   
-/** Remote URL used by `send` to POST events. */
+
+  /** Remote URL used by `send` to POST events. */
   private readonly targetUrl?: string;
 
   constructor(opts: HttpTransportOptions = {}) {
@@ -51,15 +54,12 @@ export class HttpTransport<T extends Record<string, any>> implements Transport<T
     this.targetUrl = targetUrl;
 
     if (listenPort !== undefined) {
-      // Create a simple HTTP server that forwards POST bodies to listeners.
       this.server = http.createServer(this.handleRequest.bind(this));
-      // Using `listenPort` of 0 lets the OS pick a free port.
       this.server.listen(listenPort);
     }
   }
 
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-/** Internal handler for inbound HTTP POST requests. */
+  /** Internal handler for inbound HTTP POST requests. */
   private handleRequest(req: IncomingMessage, res: ServerResponse) {
     if (req.method !== "POST" || req.url !== this.listenPath) {
       res.statusCode = 404;
@@ -88,12 +88,10 @@ export class HttpTransport<T extends Record<string, any>> implements Transport<T
       }
     });
   }
-   
-/** Send an event to the configured remote HTTP endpoint. */
+
+  /** Send an event to the configured remote HTTP endpoint. */
   send<E extends keyof T>(event: E, payload: T[E]): void {
     if (!this.targetUrl) {
-      // No target – silently ignore. This mirrors other transports that do not
-      // enforce a destination.
       return;
     }
     const data = JSON.stringify({ event: event as string, payload });
@@ -111,18 +109,16 @@ export class HttpTransport<T extends Record<string, any>> implements Transport<T
       },
     } as const;
     const req = lib.request(options, (res) => {
-      // Consume the response body to free resources.
       res.on("data", () => {});
     });
     req.on("error", () => {
-      // Swallow errors – transports are fire‑and‑forget.
+      // Swallow errors - transports are fire-and-forget.
     });
     req.write(data);
     req.end();
   }
 
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-/** Register a listener for a specific event name. */
+  /** Register a listener for a specific event name. */
   on<E extends keyof T>(event: E, listener: (payload: T[E]) => void): void {
     const key = event as string;
     let set = this.listeners.get(key);
@@ -131,5 +127,13 @@ export class HttpTransport<T extends Record<string, any>> implements Transport<T
       this.listeners.set(key, set);
     }
     set.add(listener as (payload: any) => void);
+  }
+
+  /** Remove a previously registered listener for a specific event name. */
+  off<E extends keyof T>(event: E, listener: (payload: T[E]) => void): void {
+    const set = this.listeners.get(event as string);
+    if (set) {
+      set.delete(listener as (payload: any) => void);
+    }
   }
 }
