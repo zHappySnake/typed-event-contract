@@ -6,7 +6,6 @@ type Events = {
   'order:placed': { orderId: number };
 };
 
-// Exact listener test
 test('exact listener receives events within its namespace', () => {
   const bus = createNamespacedEventBus<Events>('app');
   const exactListener = vi.fn();
@@ -16,18 +15,15 @@ test('exact listener receives events within its namespace', () => {
   expect(exactListener).toHaveBeenCalledWith({ id: 'u1' });
 });
 
-// Wildcard listener test
 test('wildcard listener receives matching events', () => {
   const bus = createNamespacedEventBus<Events>('app');
   const wildcardListener = vi.fn();
-  // Pattern to match any event ending with ':created'
   bus.on('*:created', wildcardListener);
   bus.emit('user:created', { id: 'u2' });
   expect(wildcardListener).toHaveBeenCalledOnce();
   expect(wildcardListener).toHaveBeenCalledWith({ id: 'u2' });
 });
 
-// Namespace isolation test
 test('listeners in a different namespace are not invoked', () => {
   const busA = createNamespacedEventBus<Events>('app');
   const busB = createNamespacedEventBus<Events>('other');
@@ -38,4 +34,28 @@ test('listeners in a different namespace are not invoked', () => {
   busA.emit('user:created', { id: 'u3' });
   expect(listenerA).toHaveBeenCalledOnce();
   expect(listenerB).not.toHaveBeenCalled();
+});
+
+test('off() removes an exact listener so it no longer receives events', () => {
+  const bus = createNamespacedEventBus<Events>('app');
+  const listener = vi.fn();
+  bus.on('user:created', listener);
+  bus.off('user:created', listener);
+  bus.emit('user:created', { id: 'u4' });
+  expect(listener).not.toHaveBeenCalled();
+});
+
+test('off() removes a wildcard listener so it no longer receives events', () => {
+  const bus = createNamespacedEventBus<Events>('app');
+  const listener = vi.fn();
+  bus.on('*:created', listener);
+  bus.off('*:created', listener);
+  bus.emit('user:created', { id: 'u5' });
+  expect(listener).not.toHaveBeenCalled();
+});
+
+test('off() is a no-op when the listener was never registered', () => {
+  const bus = createNamespacedEventBus<Events>('app');
+  const listener = vi.fn();
+  expect(() => bus.off('user:created', listener)).not.toThrow();
 });
