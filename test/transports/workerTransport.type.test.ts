@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect, expectTypeOf, test } from 'vitest';
 import { WorkerTransport } from '../../src/transports/workerTransport';
 

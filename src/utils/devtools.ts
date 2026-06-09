@@ -6,6 +6,7 @@
  * or when the extension is missing, events are logged to the console.
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { EventBus } from "../core/eventBus";
 
 /**
@@ -28,26 +29,22 @@ export function connectToReduxDevTools<T extends Record<string, any>>(
   if (typeof window === "undefined") {
     // Fallback: log events to the console.
     bus.connectDevTools((event, payload) => {
-      // eslint-disable-next-line no-console
       console.log("[ReduxDevTools]", event, payload);
     });
     return;
   }
 
   // Attempt to get the Redux DevTools extension API.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ext = (window as any).__REDUX_DEVTOOLS_EXTENSION__;
   if (!ext || typeof ext.connect !== "function") {
     // Extension not available – fallback to console logger.
     bus.connectDevTools((event, payload) => {
-      // eslint-disable-next-line no-console
       console.log("[ReduxDevTools]", event, payload);
     });
     return;
   }
 
   // Connect to the extension. Provide a name for identification.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const devTools: any = ext.connect({ name: "Typed Event Bus" });
 
   // Forward every event to the devtools.
@@ -62,7 +59,6 @@ export function connectToReduxDevTools<T extends Record<string, any>>(
       if (msg && msg.type === "DISPATCH" && msg.payload?.type === "ACTION") {
         const { event, payload } = msg.payload;
         if (event && payload !== undefined) {
-          // @ts-ignore – runtime safety check.
           bus.emit(event, payload);
         }
       }

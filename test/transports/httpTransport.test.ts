@@ -1,6 +1,7 @@
 import { test, expect, vi } from 'vitest';
 import { HttpTransport } from '../../src/transports/httpTransport';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Verify that a client HttpTransport can POST an event to a server HttpTransport
  * and that the server's listener receives the correct payload.

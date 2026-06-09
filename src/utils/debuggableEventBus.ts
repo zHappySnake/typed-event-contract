@@ -13,14 +13,21 @@
 import { EventBus, createEventBus } from "../core/eventBus";
 
 /** Middleware function type. */
-export type Middleware<T extends Record<string, any>> = (
+export type Middleware<T extends Record<string, unknown>> = (
   event: keyof T,
   payload: T[keyof T],
   next: (event: keyof T, payload: T[keyof T]) => void
 ) => void;
 
+/** Trace entry type. */
+export type TraceEntry<T extends Record<string, unknown>> = {
+  event: keyof T;
+  payload: T[keyof T];
+  timestamp: number;
+};
+
 /** Extended EventBus interface with debugging capabilities. */
-export interface DebuggableEventBus<T extends Record<string, any>> extends EventBus<T> {
+export interface DebuggableEventBus<T extends Record<string, unknown>> extends EventBus<T> {
   /** Register a middleware function. */
   use(mw: Middleware<T>): void;
 
@@ -31,7 +38,7 @@ export interface DebuggableEventBus<T extends Record<string, any>> extends Event
   disableTracing(): void;
 
   /** Retrieve the recorded trace. */
-  getTrace(): Array<{ event: keyof T; payload: T[keyof T]; timestamp: number }>;
+  getTrace(): TraceEntry<T>[];
 
   /** Replay all recorded events in order. */
   replay(): void;
@@ -41,12 +48,12 @@ export interface DebuggableEventBus<T extends Record<string, any>> extends Event
 }
 
 /** Factory function to create a DebuggableEventBus. */
-export function createDebuggableEventBus<T extends Record<string, any>>():
+export function createDebuggableEventBus<T extends Record<string, unknown>>():
   DebuggableEventBus<T> {
   const baseBus = createEventBus<T>();
 
   const middlewares: Middleware<T>[] = [];
-  const trace: Array<{ event: keyof T; payload: T[keyof T]; timestamp: number }> = [];
+  const trace: TraceEntry<T>[] = [];
   let tracingEnabled = false;
   const devtoolHandlers: Array<(event: keyof T, payload: T[keyof T]) => void> = [];
 
@@ -62,7 +69,9 @@ export function createDebuggableEventBus<T extends Record<string, any>>():
         // Final emission to the base bus.
         baseBus.emit(ev, pl);
         // Notify devtools after emission.
-        devtoolHandlers.forEach((h) => h(ev, pl));
+        for (const h of devtoolHandlers) {
+          h(ev, pl);
+        }
       }
     };
     next(event, payload);
@@ -92,9 +101,9 @@ export function createDebuggableEventBus<T extends Record<string, any>>():
     replay() {
       // Replay a snapshot of the current trace to avoid infinite loops if middleware records events again.
       const snapshot = [...trace];
-      snapshot.forEach((record) => {
+      for (const record of snapshot) {
         dispatch(record.event, record.payload);
-      });
+      }
     },
     connectDevTools(handler) {
       devtoolHandlers.push(handler);

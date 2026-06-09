@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi } from 'vitest';
 import { createDebuggableEventBus } from '../../src/utils/debuggableEventBus';
 import { connectToReduxDevTools } from '../../src/utils/devtools';
@@ -14,7 +15,6 @@ describe('connectToReduxDevTools', () => {
       send,
       subscribe: vi.fn(),
     };
-    // @ts-ignore – assign to global for test.
     global.window = {
       __REDUX_DEVTOOLS_EXTENSION__: {
         connect: vi.fn().mockReturnValue(devToolsMock),
@@ -33,7 +33,6 @@ describe('connectToReduxDevTools', () => {
   it('falls back to console.log when extension missing', () => {
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     // Ensure window has no devtools extension.
-    // @ts-ignore
     global.window = {} as any;
 
     const bus = createDebuggableEventBus<Events>();

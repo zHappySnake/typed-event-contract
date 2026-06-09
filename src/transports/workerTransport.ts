@@ -1,5 +1,6 @@
 import { Transport } from "./transport";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * WorkerTransport implements the Transport interface using a MessagePort‑like
  * object (e.g. a Web Worker, `worker_threads` parentPort, or any object that
@@ -9,9 +10,11 @@ import { Transport } from "./transport";
  * `payload`. Incoming messages are parsed and dispatched to registered listeners.
  */
 export class WorkerTransport<T extends Record<string, any>> implements Transport<T> {
-  /** Underlying communication channel – a MessagePort‑like object */
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+/** Underlying communication channel – a MessagePort‑like object */
   private readonly port: any;
-  /** Local listeners mapped by event name */
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+/** Local listeners mapped by event name */
   private readonly listeners: Map<string, Set<(payload: any) => void>> = new Map();
 
   constructor(port: any) {
@@ -28,7 +31,7 @@ export class WorkerTransport<T extends Record<string, any>> implements Transport
         this.port.addListener("message", handler);
       } else {
         // Fallback: assume the port has an `on` method.
-        this.port.on && this.port.on("message", handler);
+        this.port.on?.("message", handler);
       }
     };
 
@@ -53,8 +56,8 @@ export class WorkerTransport<T extends Record<string, any>> implements Transport
       }
     });
   }
-
-  /**
+   
+/**
    * Send an event over the worker channel. The data is JSON‑stringified with the
    * shape `{ event, payload }`.
    */
@@ -63,7 +66,8 @@ export class WorkerTransport<T extends Record<string, any>> implements Transport
     this.port.postMessage(msg);
   }
 
-  /** Register a listener for a specific event name. */
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+/** Register a listener for a specific event name. */
   on<E extends keyof T>(event: E, listener: (payload: T[E]) => void): void {
     const key = event as string;
     let set = this.listeners.get(key);

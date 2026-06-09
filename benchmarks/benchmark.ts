@@ -19,8 +19,8 @@ function benchmark(iterations: number) {
     bus.emit("benchmark:event", { id: i });
   }
   const end = performance.now();
-  console.log(`Emitted ${iterations.toLocaleString()} events in ${(end - start).toFixed(2)} ms`);
+  console.log(`Emitted ${iterations.toLocaleString()} events in ${(end - start).toFixed(2)} ms`);
 }
 
-// Run a default benchmark of 1 000 000 iterations.
+// Run a default benchmark of 1 000 000 iterations.
 benchmark(1_000_000);

@@ -2,6 +2,7 @@ import { Transport } from "./transport";
 import WebSocket from "ws";
 import { Buffer } from "buffer";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * WebSocketTransport implements the Transport interface using a WebSocket
  * connection for event delivery. Payloads are serialized as JSON strings.
@@ -40,7 +41,8 @@ export class WebSocketTransport<T extends Record<string, any>> implements Transp
     });
   }
 
-  /**
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+/**
    * Create a client connection to a WebSocket server.
    * Resolves when the underlying socket is open.
    */

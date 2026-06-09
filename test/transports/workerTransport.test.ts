@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi } from 'vitest';
 import { WorkerTransport } from '../../src/transports/workerTransport';
 import { EventEmitter } from 'events';

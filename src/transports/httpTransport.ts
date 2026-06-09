@@ -14,14 +14,15 @@ import { IncomingMessage, ServerResponse } from "http";
  *   If omitted, `send` becomes a no‑op.
  */
 export interface HttpTransportOptions {
-  /** Port for the inbound HTTP server. Omit to disable listening. */
+/** Port for the inbound HTTP server. Omit to disable listening. */
   listenPort?: number;
-  /** Request path for inbound events – defaults to `/event`. */
+/** Request path for inbound events – defaults to `/event`. */
   listenPath?: string;
-  /** Full URL of the remote endpoint for outgoing events. */
+/** Full URL of the remote endpoint for outgoing events. */
   targetUrl?: string;
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * HTTP transport implementing the `Transport` interface.
  *
@@ -31,16 +32,17 @@ export interface HttpTransportOptions {
  * modules.
  */
 export class HttpTransport<T extends Record<string, any>> implements Transport<T> {
-  /** Map of event listeners keyed by event name. */
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+/** Map of event listeners keyed by event name. */
   private listeners: Map<string, Set<(payload: any) => void>> = new Map();
-
-  /** Optional HTTP server for inbound events. */
+   
+/** Optional HTTP server for inbound events. */
   public server?: http.Server;
-
-  /** The request path the server expects – defaults to `/event`. */
+   
+/** The request path the server expects – defaults to `/event`. */
   private readonly listenPath: string;
-
-  /** Remote URL used by `send` to POST events. */
+   
+/** Remote URL used by `send` to POST events. */
   private readonly targetUrl?: string;
 
   constructor(opts: HttpTransportOptions = {}) {
@@ -56,7 +58,8 @@ export class HttpTransport<T extends Record<string, any>> implements Transport<T
     }
   }
 
-  /** Internal handler for inbound HTTP POST requests. */
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+/** Internal handler for inbound HTTP POST requests. */
   private handleRequest(req: IncomingMessage, res: ServerResponse) {
     if (req.method !== "POST" || req.url !== this.listenPath) {
       res.statusCode = 404;
@@ -85,8 +88,8 @@ export class HttpTransport<T extends Record<string, any>> implements Transport<T
       }
     });
   }
-
-  /** Send an event to the configured remote HTTP endpoint. */
+   
+/** Send an event to the configured remote HTTP endpoint. */
   send<E extends keyof T>(event: E, payload: T[E]): void {
     if (!this.targetUrl) {
       // No target – silently ignore. This mirrors other transports that do not
@@ -118,7 +121,8 @@ export class HttpTransport<T extends Record<string, any>> implements Transport<T
     req.end();
   }
 
-  /** Register a listener for a specific event name. */
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+/** Register a listener for a specific event name. */
   on<E extends keyof T>(event: E, listener: (payload: T[E]) => void): void {
     const key = event as string;
     let set = this.listeners.get(key);

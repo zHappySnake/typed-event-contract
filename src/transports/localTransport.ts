@@ -1,5 +1,6 @@
 import { Transport } from "./transport";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * LocalTransport forwards events within the same process.
  * It does not involve any I/O and mirrors the behavior of an in‑memory event bus.

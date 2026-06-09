@@ -1,3 +1,4 @@
+ 
 /**
  * Namespaced Event Bus with wildcard subscription support.
  *
@@ -15,12 +16,12 @@
  */
 
 import { EventBus } from "./eventBus";
-
+ 
 /** Helper: escape RegExp meta‑characters in a string. */
 function escapeRegExp(str: string): string {
   return str.replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");
 }
-
+ 
 /** Convert a simple wildcard pattern (using `*`) to a RegExp. */
 function patternToRegExp(pattern: string): RegExp {
   const escaped = escapeRegExp(pattern);
@@ -28,6 +29,7 @@ function patternToRegExp(pattern: string): RegExp {
   return new RegExp(regexStr);
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Create a namespaced event bus.
  *
@@ -41,16 +43,16 @@ export function createNamespacedEventBus<T extends Record<string, any>>(
   // Maps for exact event listeners and pattern listeners.
   const exactListeners = new Map<string, Set<(payload: unknown) => void>>();
   const patternListeners = new Map<string, Set<(payload: unknown) => void>>();
-
-  /** Prefix an event with the namespace unless already prefixed. */
+   
+/** Prefix an event with the namespace unless already prefixed. */
   function fullEventName(event: string): string {
     if (namespace && event.startsWith(namespace + ".")) {
       return event;
     }
     return namespace ? `${namespace}.${event}` : event;
   }
-
-  /** Determine if a stored pattern matches a full event name. */
+   
+/** Determine if a stored pattern matches a full event name. */
   function patternMatches(pattern: string, fullEvent: string): boolean {
     const re = patternToRegExp(pattern);
     return re.test(fullEvent);
