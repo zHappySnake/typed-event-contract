@@ -13,7 +13,7 @@
  */
 
 /** Generic interface describing the public API of the event bus. */
-export interface EventBus<T extends Record<string, any>> {
+export interface EventBus<T extends Record<string, unknown>> {
   /** Emit an event with a payload that matches the contract. */
   emit<E extends keyof T>(event: E, payload: T[E]): void;
 
@@ -27,7 +27,7 @@ export interface EventBus<T extends Record<string, any>> {
  * The returned object conforms to {@link EventBus} and stores listeners in a
  * private `Map`. No hidden state leaks outside the closure.
  */
-export function createEventBus<T extends Record<string, any>>(): EventBus<T> {
+export function createEventBus<T extends Record<string, unknown>>(): EventBus<T> {
   // Map of event name → set of listener callbacks.
   const listeners = new Map<string, Set<(payload: unknown) => void>>();
 
