@@ -5,15 +5,6 @@ import { IncomingMessage, ServerResponse } from "http";
 
 /**
  * Options for configuring the HTTP transport.
- *
- * - `listenPort` starts an HTTP server that receives events.
- *   The server listens on the given port (or a random port if `0`).
- * - `listenPath` is the URL path that the server accepts POST requests on.
- *   Defaults to `/event`.
- * - `targetUrl` is the endpoint to which `send` POSTs events.
- *   If omitted, `send` becomes a no-op.
- *
- * **Node.js only** - this transport is not compatible with browser or edge runtimes.
  */
 export interface HttpTransportOptions {
   /** Port for the inbound HTTP server. Omit to disable listening. */
@@ -24,7 +15,6 @@ export interface HttpTransportOptions {
   targetUrl?: string;
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * HTTP transport implementing the `Transport` interface.
  *
@@ -35,9 +25,9 @@ export interface HttpTransportOptions {
  *
  * **Node.js only** - this transport is not compatible with browser or edge runtimes.
  */
-export class HttpTransport<T extends Record<string, any>> implements Transport<T> {
+export class HttpTransport<T extends Record<string, unknown>> implements Transport<T> {
   /** Map of event listeners keyed by event name. */
-  private listeners: Map<string, Set<(payload: any) => void>> = new Map();
+  private listeners: Map<string, Set<(payload: unknown) => void>> = new Map();
 
   /** Optional HTTP server for inbound events. */
   public server?: http.Server;
@@ -72,7 +62,7 @@ export class HttpTransport<T extends Record<string, any>> implements Transport<T
     });
     req.on("end", () => {
       try {
-        const msg = JSON.parse(body) as { event: string; payload: any };
+        const msg = JSON.parse(body) as { event: string; payload: unknown };
         const set = this.listeners.get(msg.event);
         if (set) {
           for (const fn of set) {
@@ -126,14 +116,14 @@ export class HttpTransport<T extends Record<string, any>> implements Transport<T
       set = new Set();
       this.listeners.set(key, set);
     }
-    set.add(listener as (payload: any) => void);
+    set.add(listener as (payload: unknown) => void);
   }
 
   /** Remove a previously registered listener for a specific event name. */
   off<E extends keyof T>(event: E, listener: (payload: T[E]) => void): void {
     const set = this.listeners.get(event as string);
     if (set) {
-      set.delete(listener as (payload: any) => void);
+      set.delete(listener as (payload: unknown) => void);
     }
   }
 }

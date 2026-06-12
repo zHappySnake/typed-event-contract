@@ -28,7 +28,6 @@ function patternToRegExp(pattern: string): RegExp {
   return new RegExp(regexStr);
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Create a namespaced event bus.
  *
@@ -36,7 +35,7 @@ function patternToRegExp(pattern: string): RegExp {
  *                  listened-to event already starts with `${namespace}.`, the
  *                  prefix is not added again.
  */
-export function createNamespacedEventBus<T extends Record<string, any>>(
+export function createNamespacedEventBus<T extends Record<string, unknown>>(
   namespace: string
 ): EventBus<T> {
   // Maps for exact event listeners and pattern listeners.
@@ -60,7 +59,6 @@ export function createNamespacedEventBus<T extends Record<string, any>>(
   return {
     emit(event, payload) {
       const full = fullEventName(event as string);
-      // Exact listeners.
       const exactSet = exactListeners.get(full);
       if (exactSet) {
         for (const fn of exactSet) {
@@ -97,15 +95,9 @@ export function createNamespacedEventBus<T extends Record<string, any>>(
     off(event, listener) {
       const full = fullEventName(event as string);
       if (full.includes("*")) {
-        const set = patternListeners.get(full);
-        if (set) {
-          set.delete(listener as (payload: unknown) => void);
-        }
+        patternListeners.get(full)?.delete(listener as (payload: unknown) => void);
       } else {
-        const set = exactListeners.get(full);
-        if (set) {
-          set.delete(listener as (payload: unknown) => void);
-        }
+        exactListeners.get(full)?.delete(listener as (payload: unknown) => void);
       }
     },
   };

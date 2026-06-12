@@ -2,25 +2,20 @@ import { Transport } from "./transport";
 import WebSocket from "ws";
 import { Buffer } from "buffer";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * WebSocketTransport implements the Transport interface using a WebSocket
  * connection for event delivery. Payloads are serialized as JSON strings.
  *
- * Note: this transport depends on the `ws` package and is intended for
- * Node.js environments. In browser environments the native `WebSocket` global
- * is available and `ws` is not needed; a browser-specific build or conditional
- * import should be used instead.
+ * Node.js only - depends on the `ws` package.
  */
-export class WebSocketTransport<T extends Record<string, any>> implements Transport<T> {
+export class WebSocketTransport<T extends Record<string, unknown>> implements Transport<T> {
   private ws: WebSocket;
-  private listeners: Map<string, Set<(payload: any) => void>> = new Map();
+  private listeners: Map<string, Set<(payload: unknown) => void>> = new Map();
 
   constructor(ws: WebSocket) {
     this.ws = ws;
     // Bind incoming messages to listener dispatch.
     this.ws.on("message", (data: WebSocket.Data) => {
-      // ws.Data can be string | Buffer | ArrayBuffer | Buffer[]
       let text: string;
       if (typeof data === "string") {
         text = data;
@@ -33,7 +28,7 @@ export class WebSocketTransport<T extends Record<string, any>> implements Transp
         text = Buffer.from(data as ArrayBuffer).toString();
       }
       try {
-        const msg = JSON.parse(text) as { event: string; payload: any };
+        const msg = JSON.parse(text) as { event: string; payload: unknown };
         const set = this.listeners.get(msg.event);
         if (set) {
           for (const fn of set) {
@@ -50,13 +45,13 @@ export class WebSocketTransport<T extends Record<string, any>> implements Transp
    * Create a client connection to a WebSocket server.
    * Resolves when the underlying socket is open.
    */
-  static connect<T extends Record<string, any>>(url: string): Promise<WebSocketTransport<T>> {
+  static connect<T extends Record<string, unknown>>(url: string): Promise<WebSocketTransport<T>> {
     return new Promise((resolve, reject) => {
       const ws = new WebSocket(url);
       ws.once("open", () => {
         resolve(new WebSocketTransport<T>(ws));
       });
-      ws.once("error", (err: any) => {
+      ws.once("error", (err: Error) => {
         reject(err);
       });
     });
@@ -74,13 +69,13 @@ export class WebSocketTransport<T extends Record<string, any>> implements Transp
       set = new Set();
       this.listeners.set(key, set);
     }
-    set.add(listener as (payload: any) => void);
+    set.add(listener as (payload: unknown) => void);
   }
 
   off<E extends keyof T>(event: E, listener: (payload: T[E]) => void): void {
     const set = this.listeners.get(event as string);
     if (set) {
-      set.delete(listener as (payload: any) => void);
+      set.delete(listener as (payload: unknown) => void);
     }
   }
 }
