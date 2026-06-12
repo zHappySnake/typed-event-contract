@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Generic transport interface for the typed event contract system.
  *
@@ -6,7 +5,7 @@
  * Implementations may forward events in-process (LocalTransport) or
  * across runtimes (WebSocketTransport, etc.).
  */
-export interface Transport<T extends Record<string, any>> {
+export interface Transport<T extends Record<string, unknown>> {
   /**
    * Send an event with a payload matching the contract.
    */

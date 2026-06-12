@@ -1,6 +1,6 @@
 {
   "name": "typed-event-contract",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A fully typed, cross-runtime event contract system for TypeScript. Define events once as a type map and get full inference at every emit site and listener.",
   "keywords": [
     "typescript",
